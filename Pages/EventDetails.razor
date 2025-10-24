@@ -1,0 +1,263 @@
+@page "/event/{EventId:int}"
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@inject EventService EventService
+@inject NavigationManager Navigation
+
+<PageTitle>@eventItem?.Name - EventEase</PageTitle>
+
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading event details...</span>
+        </div>
+        <p class="mt-2">Loading event details...</p>
+    </div>
+}
+else if (eventItem == null)
+{
+    <div class="container text-center py-5">
+        <h2 class="text-danger">Event Not Found</h2>
+        <p class="lead">The event you're looking for could not be found.</p>
+        <button class="btn btn-primary" @onclick="GoBackToEvents">
+            Back to Events
+        </button>
+    </div>
+}
+else
+{
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/events" class="text-decoration-none">Events</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@eventItem.Name</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="card-title h3 mb-0">@eventItem.Name</h1>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="badge bg-secondary small me-2">@eventItem.Category</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h4 class="text-success mb-0">$@eventItem.Price.ToString("F2")</h4>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="text-primary">Event Description</h5>
+                            <p class="lead">@eventItem.Description</p>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">Event Details</h5>
+                                <div class="event-info">
+                                    <div class="info-item mb-2">
+                                        <i class="bi bi-calendar3"></i>
+                                        <strong>Date:</strong>&nbsp; @eventItem.Date.ToString("MMMM dd, yyyy")
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <i class="bi bi-clock"></i>
+                                        <strong>Time:  </strong> &nbsp; @eventItem.Date.ToString("h:mm tt")
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <strong>Location: </strong> &nbsp; @eventItem.Location
+                                    </div>
+                                    <div class="info-item mb-2">
+                                        <i class="bi bi-person"></i>
+                                        <strong>Organizer:  </strong>&nbsp;  @eventItem.Organizer
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="text-primary mb-3">Availability</h5>
+                                <div class="availability-info">
+                                    <div class="info-item mb-2">
+                                        <i class="bi bi-people"></i>
+                                        <strong>Available Seats: &nbsp;  </strong> 
+                                        <span class="@GetAvailabilityClass(eventItem.AvailableSeats)">
+                                            @eventItem.AvailableSeats
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Registration</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <h3 class="text-success">$@eventItem.Price.ToString("F2")</h3>
+                            <small class="text-muted">per person</small>
+                        </div>
+
+                        @if (eventItem.AvailableSeats > 0)
+                        {
+                            <button class="btn btn-primary btn-lg w-100 mb-3">
+                                Register Now
+                            </button>
+                            
+                            @if (eventItem.AvailableSeats <= 10)
+                            {
+                                <div class="alert alert-warning py-2 px-3" role="alert">
+                                    <strong>Hurry!</strong> Only @eventItem.AvailableSeats seats left!
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary btn-lg w-100 mb-3" disabled>
+                                Event Full
+                            </button>
+                            <div class="alert alert-danger py-2 px-3" role="alert">
+                                <strong>Sorry!</strong> This event is fully booked.
+                            </div>
+                        }
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" @onclick="GoBackToEvents">
+                                Back to Events
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-item i {
+        width: 20px;
+        text-align: center;
+        margin-right: 8px;
+    }
+
+    .availability-high {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .availability-medium {
+        color: #ffa807ff;
+        font-weight: bold;
+    }
+
+    .availability-low {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+    }
+</style>
+
+@code {
+    [Parameter] public int EventId { get; set; }
+    
+    private Event? eventItem;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEventDetails();
+        isLoading = false;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Enhanced validation for EventId parameter
+        var currentUrl = Navigation.Uri;
+        var urlSegments = currentUrl.Split('/');
+        var eventIdSegment = urlSegments.Length > 0 ? urlSegments.LastOrDefault() : null;
+        
+        // Check for various invalid formats
+        if (eventIdSegment != null)
+        {
+            // Check if contains decimal point, letters, or other invalid characters
+            if (eventIdSegment.Contains('.') || 
+                eventIdSegment.Any(c => !char.IsDigit(c) && c != '-') ||
+                eventIdSegment.Contains("--") ||
+                eventIdSegment.Length > 10) // Prevent overflow attempts
+            {
+                Navigation.NavigateTo("/invalid-event-id", true);
+                return;
+            }
+        }
+
+        // Validate EventId parameter
+        if (EventId <= 0)
+        {
+            eventItem = null;
+            isLoading = false;
+            return;
+        }
+
+        if (eventItem?.EventId != EventId)
+        {
+            isLoading = true;
+            StateHasChanged();
+            
+            try
+            {
+                await LoadEventDetails();
+            }
+            catch (Exception)
+            {
+                // Handle any service errors gracefully
+                eventItem = null;
+            }
+            finally
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task LoadEventDetails()
+    {
+        eventItem = await EventService.GetEventByIdAsync(EventId);
+    }
+
+    private string GetAvailabilityClass(int availableSeats)
+    {
+        return availableSeats switch
+        {
+            > 50 => "availability-high",
+            > 10 => "availability-medium",
+            _ => "availability-low"
+        };
+    }
+
+    private void GoBackToEvents()
+    {
+        Navigation.NavigateTo("/events");
+    }
+}

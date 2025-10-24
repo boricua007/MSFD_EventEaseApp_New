@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\MSFD_EventEaseApp.props" />
+</Project>

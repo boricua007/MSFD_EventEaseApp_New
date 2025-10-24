@@ -1,0 +1,217 @@
+@using MSFD_EventEaseApp.Models
+
+@if (IsValidEvent)
+{
+    <div class="card event-card h-100 shadow-sm">
+        <div class="card-header @GetHeaderColorClass() text-white">
+            <h5 class="card-title mb-0">@GetSafeEventName()</h5>
+            @if (HasMissingData())
+            {
+                <small class="d-block mt-1 opacity-75">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Missing information
+                </small>
+            }
+        </div>
+        <div class="card-body d-flex flex-column">
+            <div class="mb-3">
+                <span class="badge bg-secondary small">@GetSafeCategory()</span>
+            </div>
+            
+            <p class="card-text flex-grow-1">
+                @GetSafeDescription()
+            </p>
+            
+            <div class="event-details mb-3">
+                <div class="mb-2">
+                    <i class="bi bi-calendar3"></i>
+                    <strong>Date: </strong> @GetSafeDate()
+                </div>
+                <div class="mb-2">
+                    <i class="bi bi-clock"></i>
+                    <strong>Time: </strong> @GetSafeTime()
+                </div>
+                <div class="mb-2">
+                    <i class="bi bi-geo-alt"></i>
+                    <strong>Location: </strong> @GetSafeLocation()
+                </div>
+                <div class="mb-2">
+                    <i class="bi bi-currency-dollar"></i>
+                    <strong>Price: </strong> @GetSafePrice()
+                </div>
+                <div class="mb-2">
+                    <i class="bi bi-people"></i>
+                    <strong>Available Seats: </strong> @GetSafeAvailableSeats()
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-primary w-100" @onclick="HandleViewDetails" disabled="@(!CanViewDetails)">
+                View Details 
+            </button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card event-card h-100 shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="card-title mb-0">Invalid Event Data</h5>
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center text-center">
+            <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 2rem;"></i>
+            <p class="mt-2 text-muted">Event data is missing or invalid</p>
+        </div>
+    </div>
+}
+
+<style>
+    .event-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border-radius: 10px;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+
+    .event-details i {
+        margin-right: 8px;
+        width: 16px;
+    }
+
+    .card-header {
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .card-footer {
+        border-top: none;
+        background-color: transparent;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .bg-warning {
+        background-color: #ff8c00 !important; /* Orange */
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important; /* Red */
+    }
+
+    .card-header.bg-warning,
+    .card-header.bg-danger {
+        animation: pulse-warning 2s ease-in-out infinite alternate;
+    }
+
+    @@keyframes pulse-warning {
+        0% { opacity: 1; }
+        100% { opacity: 0.85; }
+    }
+</style>
+
+@code {
+    [Parameter] public Event Event { get; set; } = new();
+    [Parameter] public EventCallback<int> OnViewDetails { get; set; }
+
+    // Validation Properties
+    private bool IsValidEvent => Event != null && Event.EventId > 0;
+
+    private bool CanViewDetails => IsValidEvent;
+
+    // Missing Data Detection
+    private bool HasMissingData()
+    {
+        if (Event == null) return true;
+        
+        return string.IsNullOrWhiteSpace(Event.Name) ||
+               string.IsNullOrWhiteSpace(Event.Category) ||
+               string.IsNullOrWhiteSpace(Event.Location) ||
+               string.IsNullOrWhiteSpace(Event.Description) ||
+               Event.Date == default(DateTime) ||
+               Event.Price < 0 ||
+               Event.AvailableSeats < 0;
+    }
+
+    private string GetHeaderColorClass()
+    {
+        if (!HasMissingData()) return "bg-primary";
+        
+        // Count missing critical fields for severity
+        var missingCount = 0;
+        if (string.IsNullOrWhiteSpace(Event?.Name)) missingCount++;
+        if (string.IsNullOrWhiteSpace(Event?.Category)) missingCount++;
+        if (Event?.Date == default(DateTime)) missingCount++;
+        if (string.IsNullOrWhiteSpace(Event?.Location)) missingCount++;
+        
+        // Red for multiple missing critical fields, orange for minor issues
+        return missingCount >= 2 ? "bg-danger" : "bg-warning";
+    }
+
+    // Safe Data Access Methods
+    private string GetSafeEventName()
+    {
+        return string.IsNullOrWhiteSpace(Event?.Name) ? "Unnamed Event" : Event.Name.Trim();
+    }
+
+    private string GetSafeCategory()
+    {
+        return string.IsNullOrWhiteSpace(Event?.Category) ? "Uncategorized" : Event.Category.Trim();
+    }
+
+    private string GetSafeDescription()
+    {
+        if (string.IsNullOrWhiteSpace(Event?.Description))
+            return "No description available.";
+
+        var description = Event.Description.Trim();
+        return description.Length > 120 
+            ? $"{description.Substring(0, 120).Trim()}..." 
+            : description;
+    }
+
+    private string GetSafeDate()
+    {
+        return Event?.Date == default(DateTime) || Event?.Date == null
+            ? "Date TBD"
+            : Event.Date.ToString("MMM dd, yyyy");
+    }
+
+    private string GetSafeTime()
+    {
+        return Event?.Date == default(DateTime) || Event?.Date == null
+            ? "Time TBD"
+            : Event.Date.ToString("h:mm tt");
+    }
+
+    private string GetSafeLocation()
+    {
+        return string.IsNullOrWhiteSpace(Event?.Location) ? "Location TBD" : Event.Location.Trim();
+    }
+
+    private string GetSafePrice()
+    {
+        return Event?.Price == null || Event.Price < 0 
+            ? "Price TBD" 
+            : $"${Event.Price:F2}";
+    }
+
+    private string GetSafeAvailableSeats()
+    {
+        return Event?.AvailableSeats == null || Event.AvailableSeats < 0 
+            ? "Seats TBD" 
+            : Event.AvailableSeats.ToString();
+    }
+
+    private async Task HandleViewDetails()
+    {
+        if (CanViewDetails)
+        {
+            await OnViewDetails.InvokeAsync(Event.EventId);
+        }
+    }
+}

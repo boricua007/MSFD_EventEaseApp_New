@@ -1,0 +1,108 @@
+@using MSFD_EventEaseApp.Models
+
+<div class="card event-card h-100 shadow-sm">
+    <div class="card-header @Summary.HeaderColorClass text-white">
+        <h5 class="card-title mb-0">@Summary.Name</h5>
+        @if (Summary.HasMissingData)
+        {
+            <small class="d-block mt-1 opacity-75">
+                <i class="bi bi-exclamation-triangle me-1"></i>Missing information
+            </small>
+        }
+    </div>
+    <div class="card-body d-flex flex-column">
+        <div class="mb-3">
+            <span class="badge bg-secondary small">@Summary.Category</span>
+        </div>
+        
+        <p class="card-text flex-grow-1">@Summary.ShortDescription</p>
+        
+        <div class="event-details mb-3">
+            <div class="mb-2">
+                <i class="bi bi-calendar3"></i>
+                <strong>Date: </strong> @Summary.DisplayDate
+            </div>
+            <div class="mb-2">
+                <i class="bi bi-clock"></i>
+                <strong>Time: </strong> @Summary.DisplayTime
+            </div>
+            <div class="mb-2">
+                <i class="bi bi-geo-alt"></i>
+                <strong>Location: </strong> @Summary.Location
+            </div>
+            <div class="mb-2">
+                <i class="bi bi-currency-dollar"></i>
+                <strong>Price: </strong> @Summary.DisplayPrice
+            </div>
+            <div class="mb-2">
+                <i class="bi bi-people"></i>
+                <strong>Available Seats: </strong> @(Summary.AvailableSeats < 0 ? "Seats TBD" : Summary.AvailableSeats.ToString())
+            </div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary w-100" @onclick="HandleViewDetails">
+            View Details 
+        </button>
+    </div>
+</div>
+
+<style>
+    .event-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border-radius: 10px;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+
+    .event-details i {
+        margin-right: 8px;
+        width: 16px;
+    }
+
+    .card-header {
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .badge {
+        font-size: 0.75em;
+    }
+
+    .card-footer {
+        border-top: none;
+        background-color: transparent;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .bg-warning {
+        background-color: #ff8c00 !important;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .card-header.bg-warning,
+    .card-header.bg-danger {
+        animation: pulse-warning 2s ease-in-out infinite alternate;
+    }
+
+    @@keyframes pulse-warning {
+        0% { opacity: 1; }
+        100% { opacity: 0.85; }
+    }
+</style>
+
+@code {
+    [Parameter] public EventSummary Summary { get; set; } = new();
+    [Parameter] public EventCallback<int> OnViewDetails { get; set; }
+
+    private async Task HandleViewDetails()
+    {
+        await OnViewDetails.InvokeAsync(Summary.EventId);
+    }
+}

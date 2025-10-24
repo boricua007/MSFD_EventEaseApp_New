@@ -1,0 +1,189 @@
+@using MSFD_EventEaseApp.Models
+
+<div class="event-search-container">
+    <div class="search-header">
+        <h4 class="search-title">Search Events</h4>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="ClearAllFilters">
+            <i class="bi bi-x-circle"></i> Clear All
+        </button>
+    </div>
+
+    <div class="search-form">
+        <div class="row g-2">
+            <!-- Category Filter -->
+            <div class="col-md-4">
+                <label for="eventCategory" class="form-label small">Filter by Category</label>
+                <select class="form-select form-select-sm" 
+                        id="eventCategory"
+                        @bind="SelectedCategory" 
+                        @bind:after="OnCategoryChanged">
+                    <option value="">All Categories</option>
+                    @if (Categories != null)
+                    {
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category">@category</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+        <!-- Active Filters Display -->
+        @if (HasActiveFilters)
+        {
+            <div class="active-filters mt-2">
+                <div class="filter-tags">
+                    @if (!string.IsNullOrEmpty(SelectedCategory))
+                    {
+                        <span class="badge bg-primary me-1">
+                            @SelectedCategory
+                            <button class="btn-close btn-close-white ms-1" @onclick="() => ClearFilter(nameof(SelectedCategory))"></button>
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .event-search-container {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e9ecef;
+    }
+
+    .search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .search-title {
+        margin: 0;
+        color: #495057;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .input-group-text {
+        background-color: #e9ecef;
+        border-color: #ced4da;
+        color: #6c757d;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .search-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .active-filters {
+        padding-top: 0.5rem;
+    }
+
+    .filter-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .btn-close {
+        --bs-btn-close-opacity: 0.8;
+        font-size: 0.6rem;
+        padding: 0;
+        width: 12px;
+        height: 12px;
+    }
+
+    .btn-close:hover {
+        --bs-btn-close-opacity: 1;
+    }
+
+    @@media (max-width: 768px) {
+        .event-search-container {
+            padding: 0.75rem;
+        }
+        
+        .search-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .search-title {
+            font-size: 1rem;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public List<string>? Categories { get; set; }
+    [Parameter] public EventCallback<SearchCriteria> OnSearch { get; set; }
+    [Parameter] public EventCallback OnClearFilters { get; set; }
+
+    private string selectedCategory = string.Empty;
+
+    public string SelectedCategory
+    {
+        get => selectedCategory;
+        set
+        {
+            selectedCategory = value;
+            StateHasChanged();
+        }
+    }
+
+    private bool HasActiveFilters =>
+        !string.IsNullOrEmpty(SelectedCategory);
+
+    private async Task PerformSearch()
+    {
+        var criteria = new SearchCriteria
+        {
+            EventName = string.Empty,
+            Location = string.Empty,
+            Category = SelectedCategory,
+            Date = null
+        };
+
+        await OnSearch.InvokeAsync(criteria);
+    }
+
+    private async Task OnCategoryChanged()
+    {
+        await PerformSearch();
+    }
+
+    private async Task ClearAllFilters()
+    {
+        SelectedCategory = string.Empty;
+        await OnClearFilters.InvokeAsync();
+    }
+
+    private async Task ClearFilter(string filterName)
+    {
+        if (filterName == nameof(SelectedCategory))
+        {
+            SelectedCategory = string.Empty;
+            await PerformSearch();
+        }
+    }
+}

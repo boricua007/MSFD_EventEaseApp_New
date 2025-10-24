@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\MSFD_EventEaseApp.props" />
+</Project>

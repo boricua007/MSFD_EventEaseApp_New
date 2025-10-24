@@ -1,0 +1,93 @@
+﻿@page "/"
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@using MSFD_EventEaseApp.Components
+@inject EventService EventService
+@inject NavigationManager Navigation
+
+<PageTitle>Welcome to Event Ease</PageTitle>
+
+<div class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-3 fw-bold mb-4">Welcome to Event Ease<br>MDC Corporate Events</h1>
+                <p class="lead fs-4 mb-4">
+                    Your premier destination for discovering and managing MDC's corporate and social events. 
+                    Connect, learn, and grow with events tailored to your interests.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <button class="btn btn-light btn-lg px-4" @onclick="@(() => Navigation.NavigateTo("/events"))">
+                        Browse Events
+                    </button>
+                    <button class="btn btn-outline-light btn-lg px-4">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    @if (featuredEvents != null && featuredEvents.Count > 0)
+    {
+        <div class="row mb-5">
+            <div class="col-12">
+                <h3 class="display-6 fw-bold text-center text-primary mb-4">Featured Events</h3>
+                <p class="text-center text-muted mb-4">Don't miss out on these upcoming events</p>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            @foreach (var eventItem in featuredEvents.Take(3))
+            {
+                <div class="col-lg-4">
+                    <EventCard Event="eventItem" OnViewDetails="HandleViewDetails" />
+                </div>
+            }
+        </div>
+
+        <div class="text-center mb-5">
+            <button class="btn btn-outline-primary btn-lg" @onclick="@(() => Navigation.NavigateTo("/events"))">
+                View All Events
+            </button>
+        </div>
+    }
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .btn {
+        border-radius: 25px;
+    }
+</style>
+
+@code {
+    private List<Event>? featuredEvents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFeaturedEvents();
+    }
+
+    private async Task LoadFeaturedEvents()
+    {
+        var allEvents = await EventService.GetAllEventsAsync();
+        
+        // Get upcoming events sorted by date
+        featuredEvents = allEvents
+            .Where(e => e.Date > DateTime.Now)
+            .OrderBy(e => e.Date)
+            .Take(3)
+            .ToList();
+    }
+
+    private void HandleViewDetails(int eventId)
+    {
+        Navigation.NavigateTo($"/event/{eventId}");
+    }
+}

@@ -1,0 +1,110 @@
+@page "/events-optimized"
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@using MSFD_EventEaseApp.Components
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@inject EventService EventService
+@inject NavigationManager Navigation
+
+<Microsoft.AspNetCore.Components.Web.PageTitle>Browse Events (Optimized) - EventEase</Microsoft.AspNetCore.Components.Web.PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">Browse Events</h1>
+            <p class="lead text-center mb-5">Discover amazing events tailored for your interests</p>
+        </div>
+    </div>
+
+    <!-- Event Search Component -->
+    <div class="row">
+        <div class="col-12">
+            <EventSearch Categories="@categories" 
+                        OnSearch="HandleSearch" 
+                        OnClearFilters="HandleClearFilters" />
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading events...</span>
+            </div>
+            <p class="mt-2">Loading events...</p>
+        </div>
+    }
+    else if (eventSummaries != null && eventSummaries.Count > 0)
+    {
+        <div class="row">
+            <Virtualize Items="@eventSummaries" Context="summary">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <OptimizedEventCard Summary="summary" OnViewDetails="HandleViewDetails" />
+                </div>
+            </Virtualize>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <h3 class="text-muted">No Events Found</h3>
+            <p class="text-muted">Check back later for new events.</p>
+        </div>
+    }
+</div>
+
+@code {
+    private List<EventSummary>? eventSummaries;
+    private List<string>? categories;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await LoadEventSummaries();
+        LoadCategories();
+        isLoading = false;
+    }
+
+    private async Task LoadEventSummaries()
+    {
+        eventSummaries = await EventService.GetEventSummariesAsync();
+    }
+
+    private void LoadCategories()
+    {
+        categories = EventService.GetAllCategories();
+    }
+
+    private async Task HandleSearch(SearchCriteria criteria)
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        eventSummaries = await EventService.SearchEventSummariesAsync(
+            eventName: criteria.EventName,
+            location: criteria.Location,
+            category: criteria.Category,
+            date: criteria.Date
+        );
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleClearFilters()
+    {
+        isLoading = true;
+        StateHasChanged();
+        
+        await LoadEventSummaries();
+        
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void HandleViewDetails(int eventId)
+    {
+        Navigation.NavigateTo($"/event/{eventId}");
+    }
+}
