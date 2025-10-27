@@ -1,0 +1,301 @@
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@inject AttendanceTrackerService AttendanceService
+@inject UserSessionTrackerService SessionTracker
+@implements IDisposable
+
+<div class="attendance-tracker card">
+    <div class="card-header">
+        <h6 class="mb-0">📋 Attendance Tracker</h6>
+    </div>
+    <div class="card-body">
+        @if (!SessionTracker.IsAuthenticated)
+        {
+            <div class="alert alert-info">
+                <small>Please log in to track attendance</small>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Your Status:</h6>
+                    <span class="badge @GetStatusBadgeClass(currentStatus)">
+                        @GetStatusText(currentStatus)
+                    </span>
+                    
+                    @if (currentRecord != null && currentRecord.CheckedInAt.HasValue)
+                    {
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                Checked in at: @currentRecord.CheckedInAt.Value.ToString("HH:mm")
+                            </small>
+                        </div>
+                    }
+
+                    @if (currentRecord != null && currentRecord.AttendanceDuration.HasValue)
+                    {
+                        <div class="mt-1">
+                            <small class="text-success">
+                                Duration: @FormatDuration(currentRecord.AttendanceDuration.Value)
+                            </small>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-6">
+                    <div class="btn-group-vertical w-100" role="group">
+                        @if (currentStatus == AttendanceStatus.Registered)
+                        {
+                            <button class="btn btn-success btn-sm" @onclick="CheckIn" disabled="@isProcessing">
+                                @if (isProcessing) 
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                ✅ Check In
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm mt-1" @onclick="CancelRegistration" disabled="@isProcessing">
+                                ❌ Cancel Registration
+                            </button>
+                        }
+                        else if (currentStatus == AttendanceStatus.Present)
+                        {
+                            <button class="btn btn-warning btn-sm" @onclick="CheckOut" disabled="@isProcessing">
+                                @if (isProcessing) 
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                🚪 Check Out
+                            </button>
+                        }
+                        else if (currentStatus == AttendanceStatus.CheckedOut)
+                        {
+                            <span class="text-success">
+                                <small>✓ Attendance completed</small>
+                            </span>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary btn-sm" @onclick="RegisterForEvent" disabled="@isProcessing">
+                                @if (isProcessing) 
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                📝 Register for Event
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <div class="alert alert-info mt-3">
+                    <small>@statusMessage</small>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int EventId { get; set; }
+    [Parameter] public string EventName { get; set; } = "";
+
+    private AttendanceRecord? currentRecord;
+    private AttendanceStatus currentStatus = AttendanceStatus.Registered;
+    private bool isProcessing = false;
+    private string statusMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AttendanceService.InitializeAsync();
+        RefreshStatus();
+        
+        // Subscribe to attendance changes
+        AttendanceService.AttendanceChanged += OnAttendanceChanged;
+    }
+
+    protected override void OnParametersSet()
+    {
+        RefreshStatus();
+    }
+
+    private void RefreshStatus()
+    {
+        if (SessionTracker.IsAuthenticated)
+        {
+            currentRecord = AttendanceService.GetAttendanceRecord(EventId);
+            currentStatus = AttendanceService.GetAttendanceStatus(EventId);
+        }
+    }
+
+    private async Task RegisterForEvent()
+    {
+        if (!SessionTracker.IsAuthenticated) return;
+
+        isProcessing = true;
+        statusMessage = "";
+        
+        try
+        {
+            var success = await AttendanceService.RegisterForEventAsync(EventId, $"Registered for {EventName}");
+            if (success)
+            {
+                statusMessage = "Successfully registered for the event!";
+                RefreshStatus();
+            }
+            else
+            {
+                statusMessage = "You are already registered for this event.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error registering: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckIn()
+    {
+        isProcessing = true;
+        statusMessage = "";
+        
+        try
+        {
+            var success = await AttendanceService.CheckInAsync(EventId, $"Checked in to {EventName}");
+            if (success)
+            {
+                statusMessage = "Successfully checked in! Welcome to the event.";
+                RefreshStatus();
+            }
+            else
+            {
+                statusMessage = "Unable to check in. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error checking in: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckOut()
+    {
+        isProcessing = true;
+        statusMessage = "";
+        
+        try
+        {
+            var success = await AttendanceService.CheckOutAsync(EventId, $"Checked out from {EventName}");
+            if (success)
+            {
+                statusMessage = "Successfully checked out. Thank you for attending!";
+                RefreshStatus();
+            }
+            else
+            {
+                statusMessage = "Unable to check out. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error checking out: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CancelRegistration()
+    {
+        isProcessing = true;
+        statusMessage = "";
+        
+        try
+        {
+            var success = await AttendanceService.CancelRegistrationAsync(EventId);
+            if (success)
+            {
+                statusMessage = "Registration cancelled successfully.";
+                RefreshStatus();
+            }
+            else
+            {
+                statusMessage = "Unable to cancel registration.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error cancelling: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnAttendanceChanged(object? sender, AttendanceEventArgs e)
+    {
+        if (e.Record.EventId == EventId)
+        {
+            InvokeAsync(() =>
+            {
+                RefreshStatus();
+                StateHasChanged();
+            });
+        }
+    }
+
+    private string GetStatusText(AttendanceStatus status)
+    {
+        return status switch
+        {
+            AttendanceStatus.Registered => "REGISTERED",
+            AttendanceStatus.Present => "PRESENT",
+            AttendanceStatus.CheckedOut => "ATTENDED",
+            AttendanceStatus.Absent => "ABSENT",
+            AttendanceStatus.Cancelled => "CANCELLED",
+            _ => "NOT REGISTERED"
+        };
+    }
+
+    private string GetStatusBadgeClass(AttendanceStatus status)
+    {
+        return status switch
+        {
+            AttendanceStatus.Registered => "bg-info",
+            AttendanceStatus.Present => "bg-success",
+            AttendanceStatus.CheckedOut => "bg-primary",
+            AttendanceStatus.Absent => "bg-warning",
+            AttendanceStatus.Cancelled => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+
+    private static string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalHours >= 1)
+            return $"{duration.Hours}h {duration.Minutes}m";
+        else
+            return $"{duration.Minutes}m {duration.Seconds}s";
+    }
+
+    public void Dispose()
+    {
+        AttendanceService.AttendanceChanged -= OnAttendanceChanged;
+    }
+}

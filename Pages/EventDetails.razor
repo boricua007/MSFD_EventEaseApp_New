@@ -1,6 +1,7 @@
 @page "/event/{EventId:int}"
 @using MSFD_EventEaseApp.Models
 @using MSFD_EventEaseApp.Services
+@using MSFD_EventEaseApp.Components
 @inject EventService EventService
 @inject NavigationManager Navigation
 
@@ -139,6 +140,11 @@ else
                             </button>
                         </div>
                     </div>
+                </div>
+
+                @* Attendance Tracker *@
+                <div class="mt-4">
+                    <AttendanceTracker EventId="@EventId" EventName="@(eventItem?.Name ?? "")" />
                 </div>
             </div>
         </div>

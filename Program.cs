@@ -16,4 +16,7 @@ builder.Services.AddScoped<RegistrationService>();
 // Register User Session Tracker as singleton to maintain session across components
 builder.Services.AddSingleton<UserSessionTrackerService>();
 
+// Register Attendance Tracker as singleton to maintain attendance data across components
+builder.Services.AddSingleton<AttendanceTrackerService>();
+
 await builder.Build().RunAsync();

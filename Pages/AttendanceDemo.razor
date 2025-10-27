@@ -1,0 +1,293 @@
+@page "/attendance-demo"
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@using MSFD_EventEaseApp.Components
+@inject AttendanceTrackerService AttendanceTracker
+@inject UserSessionTrackerService SessionTracker
+@inject EventService EventService
+@implements IDisposable
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-5 mb-4">📋 Attendance Tracker Demo</h1>
+            <p class="lead">Manage event registrations, check-ins, and attendance tracking</p>
+        </div>
+    </div>
+
+    @if (!SessionTracker.IsAuthenticated)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h5>⚠️ Authentication Required</h5>
+                    <p>Please log in first to use the attendance tracker.</p>
+                    <a href="/session-demo" class="btn btn-primary">Go to Session Demo to Log In</a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>🎯 Quick Demo Events</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var eventItem in demoEvents)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <MSFD_EventEaseApp.Components.AttendanceTracker EventId="@eventItem.EventId" EventName="@eventItem.Name" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @* User Attendance History *@
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>📈 Your Attendance History</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (userHistory.Any())
+                        {
+                            <div class="mb-3">
+                                <span class="badge bg-primary me-2">Total Events: @userHistory.Count</span>
+                                <span class="badge bg-success me-2">Attended: @userHistory.Count(r => r.IsPresent)</span>
+                                <span class="badge bg-info">Attendance Rate: @userHistory.Where(r => r.IsPresent).Count() / (double)userHistory.Count * 100:F1%</span>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Event</th>
+                                            <th>Status</th>
+                                            <th>Registered</th>
+                                            <th>Check-in</th>
+                                            <th>Duration</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var record in userHistory.Take(10))
+                                        {
+                                            <tr>
+                                                <td>Event @record.EventId</td>
+                                                <td>
+                                                    <span class="badge @GetStatusBadgeClass(record.Status)">
+                                                        @GetStatusText(record.Status)
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <small>@record.RegisteredAt.ToString("MM/dd HH:mm")</small>
+                                                </td>
+                                                <td>
+                                                    @if (record.CheckedInAt.HasValue)
+                                                    {
+                                                        <small>@record.CheckedInAt.Value.ToString("MM/dd HH:mm")</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small class="text-muted">-</small>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (record.AttendanceDuration.HasValue)
+                                                    {
+                                                        <small>@FormatDuration(record.AttendanceDuration.Value)</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small class="text-muted">-</small>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <p class="text-muted">No attendance history yet. Register for an event above to get started!</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>📊 Overall Statistics</h6>
+                    </div>
+                    <div class="card-body">
+                        @if (allEventsSummary.Any())
+                        {
+                            @foreach (var summary in allEventsSummary.Take(5))
+                            {
+                                <div class="mb-3 p-2 border rounded">
+                                    <h6 class="mb-1">Event @summary.EventId</h6>
+                                    <div class="small">
+                                        <div>👥 Registered: @summary.TotalRegistered</div>
+                                        <div>✅ Present: @summary.TotalPresent</div>
+                                        <div>📋 Attended: @summary.TotalCheckedOut</div>
+                                        <div>📈 Rate: @summary.AttendanceRate.ToString("F1")%</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No attendance data yet.</p>
+                        }
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6>🧹 Management</h6>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-warning btn-sm w-100 mb-2" @onclick="RefreshData">
+                            🔄 Refresh Data
+                        </button>
+                        <button class="btn btn-danger btn-sm w-100" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#confirmModal">
+                            🗑️ Clear All Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6>ℹ️ How to Use</h6>
+                    </div>
+                    <div class="card-body">
+                        <ol class="small">
+                            <li><strong>Register</strong> for events above</li>
+                            <li><strong>Check In</strong> when event starts</li>
+                            <li><strong>Check Out</strong> when leaving</li>
+                            <li><strong>View History</strong> in the table</li>
+                        </ol>
+                        <p class="small text-muted">
+                            All data persists in your browser's local storage.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Clear Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to clear all attendance data? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmClearData" data-bs-dismiss="modal">Clear All Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Event> demoEvents = new();
+    private List<AttendanceRecord> userHistory = new();
+    private List<EventAttendanceSummary> allEventsSummary = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AttendanceTracker.InitializeAsync();
+        await LoadDemoEvents();
+        RefreshData();
+        
+        // Subscribe to attendance changes
+        AttendanceTracker.AttendanceChanged += OnAttendanceChanged;
+    }
+
+    private async Task LoadDemoEvents()
+    {
+        var allEvents = await EventService.GetAllEventsAsync();
+        demoEvents = allEvents.Take(4).ToList(); // Show first 4 events for demo
+    }
+
+    private void RefreshData()
+    {
+        if (SessionTracker.IsAuthenticated)
+        {
+            userHistory = AttendanceTracker.GetUserAttendanceHistory();
+            allEventsSummary = AttendanceTracker.GetAllEventsSummary();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ConfirmClearData()
+    {
+        await AttendanceTracker.ClearAttendanceDataAsync();
+        RefreshData();
+    }
+
+    private void OnAttendanceChanged(object? sender, AttendanceEventArgs e)
+    {
+        InvokeAsync(() =>
+        {
+            RefreshData();
+        });
+    }
+
+    private string GetStatusText(AttendanceStatus status)
+    {
+        return status switch
+        {
+            AttendanceStatus.Registered => "REGISTERED",
+            AttendanceStatus.Present => "PRESENT",
+            AttendanceStatus.CheckedOut => "ATTENDED",
+            AttendanceStatus.Absent => "ABSENT",
+            AttendanceStatus.Cancelled => "CANCELLED",
+            _ => "UNKNOWN"
+        };
+    }
+
+    private string GetStatusBadgeClass(AttendanceStatus status)
+    {
+        return status switch
+        {
+            AttendanceStatus.Registered => "bg-info",
+            AttendanceStatus.Present => "bg-success",
+            AttendanceStatus.CheckedOut => "bg-primary",
+            AttendanceStatus.Absent => "bg-warning",
+            AttendanceStatus.Cancelled => "bg-secondary",
+            _ => "bg-light text-dark"
+        };
+    }
+
+    private static string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalHours >= 1)
+            return $"{duration.Hours}h {duration.Minutes}m";
+        else if (duration.TotalMinutes >= 1)
+            return $"{duration.Minutes}m";
+        else
+            return $"{duration.Seconds}s";
+    }
+
+    public void Dispose()
+    {
+        AttendanceTracker.AttendanceChanged -= OnAttendanceChanged;
+    }
+}
