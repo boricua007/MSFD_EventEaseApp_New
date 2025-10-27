@@ -195,4 +195,4 @@ This project demonstrates key competencies required for the Microsoft Full Stack
 
 ---
 
-*This EventEase application showcases enterprise-grade Blazor development with emphasis on performance, validation, and user experience - essential skills for full-stack web developers.*
+*This EventEase application showcases enterprise-grade Blazor development with emphasis on performance, validation, and user experience - essential skills for full-stack software developers.*
