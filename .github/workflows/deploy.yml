@@ -19,6 +19,10 @@ jobs:
       - name: Publish Blazor App
         run: dotnet publish -c Release -o publish
       
+      - name: Set Base Href for GitHub Pages
+        run: |
+          sed -i 's|{{BASE_HREF}}|/MSFD_EventEaseApp_New/|g' publish/wwwroot/index.html
+      
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:

@@ -112,8 +112,8 @@ else
 
                         @if (eventItem.AvailableSeats > 0)
                         {
-                            <button class="btn btn-primary btn-lg w-100 mb-3">
-                                Register Now
+                            <button class="btn btn-primary btn-lg w-100 mb-3" @onclick="HandleRegisterNow">
+                                <i class="bi bi-person-plus me-2"></i>Register Now
                             </button>
                             
                             @if (eventItem.AvailableSeats <= 10)
@@ -125,11 +125,11 @@ else
                         }
                         else
                         {
-                            <button class="btn btn-secondary btn-lg w-100 mb-3" disabled>
-                                Event Full
+                            <button class="btn btn-warning btn-lg w-100 mb-3" @onclick="HandleJoinWaitlist">
+                                <i class="bi bi-list-ul me-2"></i>Join Waitlist
                             </button>
-                            <div class="alert alert-danger py-2 px-3" role="alert">
-                                <strong>Sorry!</strong> This event is fully booked.
+                            <div class="alert alert-info py-2 px-3" role="alert">
+                                <strong>Event Full:</strong> Join the waitlist to be notified if spots become available.
                             </div>
                         }
 
@@ -259,5 +259,15 @@ else
     private void GoBackToEvents()
     {
         Navigation.NavigateTo("events");
+    }
+
+    private void HandleRegisterNow()
+    {
+        Navigation.NavigateTo($"/event/{EventId}/register");
+    }
+
+    private void HandleJoinWaitlist()
+    {
+        Navigation.NavigateTo($"/event/{EventId}/register");
     }
 }

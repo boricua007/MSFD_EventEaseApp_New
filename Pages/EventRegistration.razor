@@ -1,0 +1,347 @@
+@page "/event/{EventId:int}/register"
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@using MSFD_EventEaseApp.Components
+@inject EventService EventService
+@inject RegistrationService RegistrationService
+@inject NavigationManager Navigation
+
+@{
+    string pageTitle = $"Register for {eventItem?.Name ?? "Event"} - EventEase";
+}
+<PageTitle>@pageTitle</PageTitle>
+
+<div class="container-fluid py-4">
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading event details...</span>
+            </div>
+            <p class="mt-2">Loading event details...</p>
+        </div>
+    }
+    else if (eventItem == null)
+    {
+        <div class="container text-center py-5">
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Event Not Found</strong>
+            </div>
+            <p class="lead">The event you're trying to register for could not be found.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-primary" @onclick="GoBackToEvents">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Events
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="/events" class="text-decoration-none">Events</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="/event/@EventId" class="text-decoration-none">@eventItem.Name</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Registration</li>
+            </ol>
+        </nav>
+
+        <!-- Event Summary Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-primary shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="mb-1">@eventItem.Name</h3>
+                                <small class="opacity-75">Event Registration</small>
+                            </div>
+                            <span class="badge bg-light text-primary fs-6">@eventItem.Category</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <i class="bi bi-calendar3 me-2 text-primary"></i>
+                                    <strong>Date:</strong> @eventItem.Date.ToString("MMMM dd, yyyy 'at' h:mm tt")
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-geo-alt me-2 text-primary"></i>
+                                    <strong>Location:</strong> @eventItem.Location
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-person me-2 text-primary"></i>
+                                    <strong>Organizer:</strong> @eventItem.Organizer
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <i class="bi bi-currency-dollar me-2 text-primary"></i>
+                                    <strong>Price:</strong> $@eventItem.Price.ToString("F2") per person
+                                </div>
+                                <div class="mb-2">
+                                    <i class="bi bi-people me-2 text-primary"></i>
+                                    <strong>Available Seats:</strong> 
+                                    <span class="@GetAvailabilityClass()">@GetAvailableSeatsText()</span>
+                                </div>
+                                @if (registrationStats != null)
+                                {
+                                    <div class="mb-2">
+                                        <i class="bi bi-graph-up me-2 text-primary"></i>
+                                        <strong>Registered:</strong> @registrationStats.TotalAttendees attendees
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(eventItem.Description))
+                        {
+                            <div class="mt-3 pt-3 border-top">
+                                <p class="mb-0">@eventItem.Description</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Status Messages -->
+        @if (!string.IsNullOrEmpty(registrationMessage))
+        {
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert @(registrationSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show">
+                        <i class="bi @(registrationSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") me-2"></i>
+                        <strong>@(registrationSuccess ? "Success!" : "Error")</strong> @registrationMessage
+                        <button type="button" class="btn-close" @onclick="ClearRegistrationMessage"></button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Registration Form or Full Message -->
+        @if (GetAvailableSeats() <= 0 && !allowWaitlist)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h4 class="mb-0">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Event Full
+                            </h4>
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="lead">This event is currently full, but you can join the waitlist.</p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button class="btn btn-warning" @onclick="() => allowWaitlist = true">
+                                    <i class="bi bi-list-ul me-1"></i>Join Waitlist
+                                </button>
+                                <button class="btn btn-outline-secondary" @onclick="GoBackToEvent">
+                                    <i class="bi bi-arrow-left me-1"></i>Back to Event
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Registration Form -->
+            <div class="row">
+                <div class="col-12">
+                    @if (GetAvailableSeats() <= 0 && allowWaitlist)
+                    {
+                        <div class="alert alert-info mb-4">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <strong>Waitlist Registration:</strong> This event is full. You will be added to the waitlist and notified if spots become available.
+                        </div>
+                    }
+                    
+                    <RegistrationForm Registration="@registration" 
+                                    Event="@eventItem" 
+                                    OnRegistrationSubmit="@HandleRegistrationSubmit" 
+                                    OnCancel="@HandleCancel" />
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: ">";
+    }
+    
+    .availability-high {
+        color: #198754;
+        font-weight: bold;
+    }
+    
+    .availability-medium {
+        color: #fd7e14;
+        font-weight: bold;
+    }
+    
+    .availability-low {
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+    [Parameter] public int EventId { get; set; }
+    
+    private Event? eventItem;
+    private Registration registration = new();
+    private RegistrationStatistics? registrationStats;
+    private bool isLoading = true;
+    private string registrationMessage = string.Empty;
+    private bool registrationSuccess = false;
+    private bool allowWaitlist = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEventAndRegistrationData();
+        isLoading = false;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (EventId <= 0)
+        {
+            Navigation.NavigateTo("/events");
+            return;
+        }
+
+        if (eventItem?.EventId != EventId)
+        {
+            isLoading = true;
+            StateHasChanged();
+            
+            await LoadEventAndRegistrationData();
+            
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadEventAndRegistrationData()
+    {
+        try
+        {
+            // Load event details
+            eventItem = await EventService.GetEventByIdAsync(EventId);
+            
+            if (eventItem == null)
+            {
+                return;
+            }
+
+            // Initialize registration with event ID
+            registration = new Registration
+            {
+                EventId = EventId
+            };
+
+            // Load registration statistics
+            registrationStats = await RegistrationService.GetEventRegistrationStatisticsAsync(EventId);
+        }
+        catch (Exception ex)
+        {
+            registrationMessage = $"Error loading event data: {ex.Message}";
+            registrationSuccess = false;
+        }
+    }
+
+    private async Task HandleRegistrationSubmit(Registration submittedRegistration)
+    {
+        try
+        {
+            var result = await RegistrationService.SubmitRegistrationAsync(submittedRegistration);
+            
+            registrationMessage = result.Message;
+            registrationSuccess = result.IsValid;
+
+            if (result.IsValid && result.RegistrationId.HasValue)
+            {
+                // Refresh registration stats
+                registrationStats = await RegistrationService.GetEventRegistrationStatisticsAsync(EventId);
+                
+                // Reset form for potential additional registrations
+                registration = new Registration { EventId = EventId };
+                
+                // Auto-redirect after successful registration
+                await Task.Delay(3000);
+                Navigation.NavigateTo($"/event/{EventId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            registrationMessage = $"Registration failed: {ex.Message}";
+            registrationSuccess = false;
+        }
+        
+        StateHasChanged();
+    }
+
+    private async Task HandleCancel()
+    {
+        await Task.CompletedTask;
+        Navigation.NavigateTo($"/event/{EventId}");
+    }
+
+    private void GoBackToEvents()
+    {
+        Navigation.NavigateTo("/events");
+    }
+
+    private void GoBackToEvent()
+    {
+        Navigation.NavigateTo($"/event/{EventId}");
+    }
+
+    private void ClearRegistrationMessage()
+    {
+        registrationMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private int GetAvailableSeats()
+    {
+        if (eventItem == null || registrationStats == null) 
+            return eventItem?.AvailableSeats ?? 0;
+        
+        return Math.Max(0, eventItem.AvailableSeats - registrationStats.TotalAttendees);
+    }
+
+    private string GetAvailableSeatsText()
+    {
+        var available = GetAvailableSeats();
+        if (available <= 0)
+        {
+            return registrationStats?.WaitlistRegistrations > 0 
+                ? $"Full ({registrationStats.WaitlistRegistrations} on waitlist)"
+                : "Full";
+        }
+        return available.ToString();
+    }
+
+    private string GetAvailabilityClass()
+    {
+        var available = GetAvailableSeats();
+        return available switch
+        {
+            > 50 => "availability-high",
+            > 10 => "availability-medium",
+            _ => "availability-low"
+        };
+    }
+}

@@ -11,5 +11,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 // Register EventEase services
 builder.Services.AddScoped<EventService>();
+builder.Services.AddScoped<RegistrationService>();
 
 await builder.Build().RunAsync();
