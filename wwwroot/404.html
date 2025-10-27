@@ -5,14 +5,23 @@
     <title>Redirecting...</title>
     <script type="text/javascript">
         // Single Page Apps for GitHub Pages
-        // https://github.com/rafgraph/spa-github-pages
-        var pathSegmentsToKeep = 1;
-
+        // Modified for repository-based GitHub Pages (not root domain)
         var l = window.location;
+        var repo = '/MSFD_EventEaseApp_New';
+        
+        // Extract the path that comes after the repository name
+        var fullPath = l.pathname;
+        var repoPath = fullPath.indexOf(repo) === 0 ? fullPath.substring(repo.length) : fullPath;
+        
+        // If we're at the repo root, don't redirect
+        if (repoPath === '' || repoPath === '/') {
+            return;
+        }
+        
+        // Redirect to the SPA with the route as a parameter
         l.replace(
-            l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-            l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?p=/' +
-            l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+            l.protocol + '//' + l.hostname + repo + '/?p=' + 
+            encodeURIComponent(repoPath) +
             (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
             l.hash
         );
