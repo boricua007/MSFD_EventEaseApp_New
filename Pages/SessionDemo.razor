@@ -1,0 +1,278 @@
+@page "/session-demo"
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@inject UserSessionTrackerService SessionTracker
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<h3>User Session Tracker Demo</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Session Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Session ID:</strong> @SessionTracker.SessionId[..8]...</p>
+                <p><strong>Start Time:</strong> @SessionTracker.CurrentSession.SessionStartTime.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                <p><strong>Duration:</strong> @FormatDuration(SessionTracker.CurrentSession.SessionDuration)</p>
+                <p><strong>Last Activity:</strong> @SessionTracker.CurrentSession.LastActivity.ToString("HH:mm:ss")</p>
+                <p><strong>Current Page:</strong> @(SessionTracker.CurrentSession.State.CurrentPage ?? "Not set")</p>
+                <p><strong>Authenticated:</strong> @(SessionTracker.IsAuthenticated ? "Yes" : "No")</p>
+                
+                @if (SessionTracker.IsAuthenticated)
+                {
+                    <p><strong>Username:</strong> @SessionTracker.CurrentSession.User.Username</p>
+                    <p><strong>User ID:</strong> @SessionTracker.CurrentSession.User.UserId</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>User Actions</h5>
+            </div>
+            <div class="card-body">
+                @if (!SessionTracker.IsAuthenticated)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Username:</label>
+                        <input @bind="username" class="form-control" />
+                    </div>
+                    <button class="btn btn-primary mb-2" @onclick="LoginUser">Login</button>
+                }
+                else
+                {
+                    <button class="btn btn-secondary mb-2" @onclick="LogoutUser">Logout</button>
+                }
+
+                <br />
+                <button class="btn btn-info mb-2" @onclick="UpdateActivity">Update Activity</button>
+                <br />
+                <button class="btn btn-warning mb-2" @onclick="ClearSession">Clear Session</button>
+                
+                <div class="mt-3">
+                    <h6>Bookmark Demo Events:</h6>
+                    @for (int i = 1; i <= 3; i++)
+                    {
+                        var eventId = i;
+                        var isBookmarked = SessionTracker.CurrentSession.State.BookmarkedEventIds.Contains(eventId);
+                        <button class="btn @(isBookmarked ? "btn-danger" : "btn-outline-primary") btn-sm me-1 mb-1" 
+                                @onclick="() => ToggleBookmark(eventId)">
+                            Event @eventId @(isBookmarked ? "❤️" : "🤍")
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>User Preferences</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Theme:</label>
+                    <select @onchange="UpdateTheme" class="form-select">
+                        <option value="light" selected="@(SessionTracker.CurrentSession.Preferences.Theme == "light")">Light</option>
+                        <option value="dark" selected="@(SessionTracker.CurrentSession.Preferences.Theme == "dark")">Dark</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Page Size:</label>
+                    <input type="number" @onchange="UpdatePageSize" 
+                           value="@SessionTracker.CurrentSession.Preferences.PageSize" 
+                           class="form-control" min="5" max="50" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Enable Notifications:</label>
+                    <input type="checkbox" @onchange="UpdateNotifications" 
+                           checked="@SessionTracker.CurrentSession.Preferences.EnableNotifications" 
+                           class="form-check-input ms-2" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Session Activity</h5>
+            </div>
+            <div class="card-body">
+                <h6>Navigation History:</h6>
+                <ul class="list-unstyled">
+                    @foreach (var pageName in SessionTracker.CurrentSession.NavigationHistory.Take(5))
+                    {
+                        <li><small>@pageName</small></li>
+                    }
+                </ul>
+
+                <h6>Viewed Events:</h6>
+                <p>@SessionTracker.CurrentSession.State.ViewedEventIds.Count events viewed</p>
+
+                <h6>Bookmarked Events:</h6>
+                @if (SessionTracker.CurrentSession.State.BookmarkedEventIds.Any())
+                {
+                    <p>Events: @string.Join(", ", SessionTracker.CurrentSession.State.BookmarkedEventIds)</p>
+                }
+                else
+                {
+                    <p>No bookmarks yet</p>
+                }
+
+                <h6>Recent Changes:</h6>
+                <div class="small">
+                    @foreach (var change in sessionChanges.Take(5))
+                    {
+                        <div>@change.ChangeType: @change.Timestamp.ToString("HH:mm:ss")</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string username = "TestUser";
+    private List<SessionChangeLog> sessionChanges = new();
+
+    public class SessionChangeLog
+    {
+        public string ChangeType { get; set; } = "";
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize the session tracker
+        await SessionTracker.InitializeAsync();
+        
+        // Track this page visit
+        await SessionTracker.TrackPageVisitAsync("Session Demo");
+
+        // Subscribe to session changes
+        SessionTracker.SessionChanged += OnSessionChanged;
+        SessionTracker.UserAuthenticated += OnUserAuthenticated;
+        SessionTracker.SessionExpired += OnSessionExpired;
+
+        // Auto-refresh every 5 seconds
+        var timer = new System.Threading.Timer(async _ => 
+        {
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+    }
+
+    private async Task LoginUser()
+    {
+        if (!string.IsNullOrEmpty(username))
+        {
+            await SessionTracker.LoginUserAsync(
+                userId: Guid.NewGuid().ToString(),
+                username: username,
+                email: $"{username.ToLower()}@example.com",
+                roles: new List<string> { "User", "EventViewer" }
+            );
+        }
+    }
+
+    private async Task LogoutUser()
+    {
+        await SessionTracker.LogoutUserAsync();
+    }
+
+    private async Task UpdateActivity()
+    {
+        await SessionTracker.UpdateActivityAsync();
+    }
+
+    private async Task ClearSession()
+    {
+        sessionChanges.Clear();
+        await SessionTracker.ClearSessionAsync();
+    }
+
+    private async Task ToggleBookmark(int eventId)
+    {
+        await SessionTracker.ToggleBookmarkAsync(eventId);
+    }
+
+    private async Task UpdateTheme(ChangeEventArgs e)
+    {
+        var theme = e.Value?.ToString() ?? "light";
+        await SessionTracker.UpdatePreferenceAsync("theme", theme);
+    }
+
+    private async Task UpdatePageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var pageSize))
+        {
+            await SessionTracker.UpdatePreferenceAsync("pagesize", pageSize);
+        }
+    }
+
+    private async Task UpdateNotifications(ChangeEventArgs e)
+    {
+        var enabled = Convert.ToBoolean(e.Value);
+        await SessionTracker.UpdatePreferenceAsync("enablenotifications", enabled);
+    }
+
+    private void OnSessionChanged(object? sender, SessionEventArgs e)
+    {
+        sessionChanges.Insert(0, new SessionChangeLog
+        {
+            ChangeType = e.ChangeType,
+            Timestamp = DateTime.Now
+        });
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnUserAuthenticated(object? sender, UserSession session)
+    {
+        sessionChanges.Insert(0, new SessionChangeLog
+        {
+            ChangeType = "User Authenticated",
+            Timestamp = DateTime.Now
+        });
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnSessionExpired(object? sender, UserSession session)
+    {
+        sessionChanges.Insert(0, new SessionChangeLog
+        {
+            ChangeType = "Session Expired",
+            Timestamp = DateTime.Now
+        });
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private static string FormatDuration(TimeSpan duration)
+    {
+        if (duration.TotalHours >= 1)
+            return $"{duration.Hours}h {duration.Minutes}m {duration.Seconds}s";
+        else if (duration.TotalMinutes >= 1)
+            return $"{duration.Minutes}m {duration.Seconds}s";
+        else
+            return $"{duration.Seconds}s";
+    }
+
+    public void Dispose()
+    {
+        SessionTracker.SessionChanged -= OnSessionChanged;
+        SessionTracker.UserAuthenticated -= OnUserAuthenticated;
+        SessionTracker.SessionExpired -= OnSessionExpired;
+    }
+}

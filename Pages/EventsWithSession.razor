@@ -1,0 +1,352 @@
+@* Example showing how to integrate UserSessionTrackerService into existing components *@
+@page "/events-with-session"
+@using MSFD_EventEaseApp.Models
+@using MSFD_EventEaseApp.Services
+@inject EventService EventService
+@inject UserSessionTrackerService SessionTracker
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-4 mb-2">Browse Events with Session Tracking</h1>
+                <p class="lead mb-3">Session-aware event browsing with personalization</p>
+            </div>
+            
+            @* Session Info Display *@
+            <div class="card bg-light" style="width: 300px;">
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-1">Session Status</h6>
+                    @if (SessionTracker.IsAuthenticated)
+                    {
+                        <small class="text-success">
+                            ✅ Welcome, @SessionTracker.CurrentSession.User.Username!
+                        </small>
+                    }
+                    else
+                    {
+                        <small class="text-muted">👤 Guest User</small>
+                    }
+                    <br />
+                    <small class="text-muted">
+                        📊 @SessionTracker.CurrentSession.State.ViewedEventIds.Count viewed | 
+                        ❤️ @SessionTracker.CurrentSession.State.BookmarkedEventIds.Count bookmarked
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input class="form-control" placeholder="Search events..." 
+                                   @bind="searchTerm" />
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" @bind="selectedCategory">
+                                <option value="">All Categories</option>
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category">@category</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary" @onclick="PerformSearch">Search</button>
+                        </div>
+                    </div>
+                    
+                    @* Show last search from session *@
+                    @if (SessionTracker.CurrentSession.State.LastSearch != null)
+                    {
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                💾 Last search: @SessionTracker.CurrentSession.State.LastSearch.EventName
+                                @if (!string.IsNullOrEmpty(SessionTracker.CurrentSession.State.LastSearch.Category))
+                                {
+                                    <text> in @SessionTracker.CurrentSession.State.LastSearch.Category</text>
+                                }
+                                <button class="btn btn-sm btn-link p-0 ms-2" @onclick="RestoreLastSearch">
+                                    Restore
+                                </button>
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading events...</span>
+            </div>
+            <p class="mt-2">Loading events...</p>
+        </div>
+    }
+    else if (events != null && events.Count > 0)
+    {
+        <div class="row">
+            @foreach (var eventItem in events)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">@eventItem.Name</h6>
+                            <div>
+                                @* Status Text *@
+                                @if (IsViewed(eventItem.EventId))
+                                {
+                                    <span class="ms-1 small text-muted"> VIEWED</span>
+                                }
+                                else
+                                {
+                                    <span class="ms-1 small fw-bold">NEW</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">@eventItem.Description</p>
+                            <p class="text-muted mb-2">
+                                📅 @eventItem.Date.ToString("MMM dd, yyyy")
+                            </p>
+                            <p class="text-muted mb-2">📍 @eventItem.Location</p>
+                            <p class="text-muted mb-3">🏷️ @eventItem.Category</p>
+                            <p class="text-success mb-3">💰 $@eventItem.Price</p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            @* Bookmark Toggle - Left Side *@
+                            <button class="btn btn-sm @(IsBookmarked(eventItem.EventId) ? "btn-danger" : "btn-outline-secondary")"
+                                    @onclick="() => ToggleBookmark(eventItem.EventId)"
+                                    title="@(IsBookmarked(eventItem.EventId) ? "Remove bookmark" : "Add bookmark")">
+                                @(IsBookmarked(eventItem.EventId) ? "❤️" : "🤍")
+                            </button>
+                            
+                            @* View Details - Right Side *@
+                            <button class="btn btn-primary btn-sm" @onclick="() => HandleViewDetails(eventItem.EventId)">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Session-based Recommendations *@
+        @if (recommendedEvents.Any())
+        {
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h4>💡 Recommended for You</h4>
+                    <p class="text-muted">Based on your viewing history and preferences</p>
+                    <div class="row">
+                        @foreach (var recEvent in recommendedEvents.Take(3))
+                        {
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <h6 class="card-title">@recEvent.Name</h6>
+                                        <p class="card-text small">@recEvent.Description.Substring(0, Math.Min(100, recEvent.Description.Length))...</p>
+                                        <button class="btn btn-outline-success btn-sm" @onclick="() => HandleViewDetails(recEvent.EventId)">
+                                            Explore
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <h3 class="text-muted">No Events Found</h3>
+            <p class="text-muted">Try adjusting your search criteria</p>
+            
+            @* Show quick links based on user preferences *@
+            @if (SessionTracker.CurrentSession.Preferences.FavoriteCategories.Any())
+            {
+                <div class="mt-3">
+                    <p class="text-muted">Try browsing your favorite categories:</p>
+                    @foreach (var category in SessionTracker.CurrentSession.Preferences.FavoriteCategories.Take(3))
+                    {
+                        <button class="btn btn-outline-primary btn-sm me-2" @onclick="() => SearchByCategory(category)">
+                            @category
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Event> events = new();
+    private List<Event> allEvents = new();
+    private List<Event> recommendedEvents = new();
+    private List<string> categories = new();
+    private bool isLoading = false;
+    private string searchTerm = "";
+    private string selectedCategory = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize session tracker and track page visit
+        await SessionTracker.InitializeAsync();
+        await SessionTracker.TrackPageVisitAsync("Events with Session");
+        
+        // Load events and categories
+        await LoadEventsAsync();
+        LoadCategories();
+        
+        // Generate recommendations based on session data
+        GenerateRecommendations();
+        
+        // Subscribe to session changes
+        SessionTracker.SessionChanged += OnSessionChanged;
+    }
+
+    private async Task LoadEventsAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
+        
+        allEvents = await EventService.GetAllEventsAsync();
+        events = allEvents;
+        
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void LoadCategories()
+    {
+        categories = allEvents.Select(e => e.Category).Distinct().OrderBy(c => c).ToList();
+    }
+
+    private void GenerateRecommendations()
+    {
+        var viewedEventIds = SessionTracker.CurrentSession.State.ViewedEventIds;
+        var favoriteCategories = SessionTracker.CurrentSession.Preferences.FavoriteCategories;
+        
+        // Simple recommendation: events in same categories as viewed events
+        var viewedCategories = allEvents
+            .Where(e => viewedEventIds.Contains(e.EventId))
+            .Select(e => e.Category)
+            .Distinct()
+            .ToList();
+        
+        recommendedEvents = allEvents
+            .Where(e => !viewedEventIds.Contains(e.EventId))
+            .Where(e => viewedCategories.Contains(e.Category) || favoriteCategories.Contains(e.Category))
+            .Take(6)
+            .ToList();
+    }
+
+    private async Task PerformSearch()
+    {
+        var searchCriteria = new SearchCriteria 
+        { 
+            EventName = searchTerm,
+            Category = selectedCategory
+        };
+
+        // Save search to session
+        await SessionTracker.SetLastSearchAsync(searchCriteria);
+        
+        // Perform search
+        events = allEvents.Where(e => 
+            (string.IsNullOrEmpty(searchTerm) || e.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(selectedCategory) || e.Category == selectedCategory)
+        ).ToList();
+        
+        // Update favorite categories based on search
+        if (!string.IsNullOrEmpty(selectedCategory) && 
+            !SessionTracker.CurrentSession.Preferences.FavoriteCategories.Contains(selectedCategory))
+        {
+            SessionTracker.CurrentSession.Preferences.FavoriteCategories.Add(selectedCategory);
+            await SessionTracker.SaveToLocalStorageAsync();
+        }
+        
+        StateHasChanged();
+    }
+
+    private async Task RestoreLastSearch()
+    {
+        if (SessionTracker.CurrentSession.State.LastSearch != null)
+        {
+            searchTerm = SessionTracker.CurrentSession.State.LastSearch.EventName;
+            selectedCategory = SessionTracker.CurrentSession.State.LastSearch.Category;
+            await PerformSearch();
+        }
+    }
+
+    private async Task SearchByCategory(string category)
+    {
+        selectedCategory = category;
+        searchTerm = "";
+        await PerformSearch();
+    }
+
+    private async void HandleViewDetails(int eventId)
+    {
+        // Track event view in session
+        try 
+        {
+            await SessionTracker.TrackEventViewAsync(eventId);
+        }
+        catch 
+        {
+            // Continue even if tracking fails
+        }
+        
+        // Navigate to details
+        Navigation.NavigateTo($"event/{eventId}");
+    }
+
+    private async Task TrackEventView(int eventId)
+    {
+        // Track event view in session
+        await SessionTracker.TrackEventViewAsync(eventId);
+    }
+
+    private async Task ToggleBookmark(int eventId)
+    {
+        await SessionTracker.ToggleBookmarkAsync(eventId);
+        StateHasChanged();
+    }
+
+    private bool IsBookmarked(int eventId)
+    {
+        return SessionTracker.CurrentSession.State.BookmarkedEventIds.Contains(eventId);
+    }
+
+    private bool IsViewed(int eventId)
+    {
+        return SessionTracker.CurrentSession.State.ViewedEventIds.Contains(eventId);
+    }
+
+    private void OnSessionChanged(object? sender, SessionEventArgs e)
+    {
+        // React to session changes
+        if (e.ChangeType == "BookmarkToggled")
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        SessionTracker.SessionChanged -= OnSessionChanged;
+    }
+}

@@ -13,4 +13,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<EventService>();
 builder.Services.AddScoped<RegistrationService>();
 
+// Register User Session Tracker as singleton to maintain session across components
+builder.Services.AddSingleton<UserSessionTrackerService>();
+
 await builder.Build().RunAsync();
