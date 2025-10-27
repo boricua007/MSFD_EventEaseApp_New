@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "MSFD_EventEaseApp",
   "resources": {
-    "hash": "sha256-1baErWDE2dgYTXnVpXk23im49fvOXJ6y54OEbJx4Bm4=",
+    "hash": "sha256-6U71hLSqUhM7zk+Rbd5P8O96LNec231NEk72g2rn7HQ=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.trxlk3t5u8.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Forms.nsraukrs9h.wasm": "Microsoft.AspNetCore.Components.Forms.wasm",
@@ -31,7 +31,7 @@
       "System.IO.Pipelines.wn1erg3up3.wasm": "System.IO.Pipelines.wasm",
       "System.Linq.Expressions.vpyrgkh4zl.wasm": "System.Linq.Expressions.wasm",
       "System.Linq.Queryable.0y57jtba0a.wasm": "System.Linq.Queryable.wasm",
-      "System.Linq.pxiwmi8fnt.wasm": "System.Linq.wasm",
+      "System.Linq.8ui16g2zpy.wasm": "System.Linq.wasm",
       "System.Memory.bp0h7ss33b.wasm": "System.Memory.wasm",
       "System.Net.Http.unyy781uvi.wasm": "System.Net.Http.wasm",
       "System.Net.Mail.rsksa09trd.wasm": "System.Net.Mail.wasm",
@@ -46,8 +46,8 @@
       "System.Text.RegularExpressions.5gjltihx5v.wasm": "System.Text.RegularExpressions.wasm",
       "System.Threading.6wxzpv4ki1.wasm": "System.Threading.wasm",
       "System.8rv0tdtrxz.wasm": "System.wasm",
-      "System.Private.CoreLib.banva304v1.wasm": "System.Private.CoreLib.wasm",
-      "MSFD_EventEaseApp.l4y6ao7lpg.wasm": "MSFD_EventEaseApp.wasm",
+      "System.Private.CoreLib.6ir871w1m7.wasm": "System.Private.CoreLib.wasm",
+      "MSFD_EventEaseApp.vir23h66lk.wasm": "MSFD_EventEaseApp.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.l4ptthxatg.js": "dotnet.native.js",
       "dotnet.native.d2w7colv7e.wasm": "dotnet.native.wasm",
@@ -72,7 +72,7 @@
     },
     "coreAssembly": {
       "System.Runtime.InteropServices.JavaScript.lu7n7av6ff.wasm": "sha256-fcbhHB7hDI448FbXH9oGRMD0YiK7sml91c0Cfomkn6c=",
-      "System.Private.CoreLib.banva304v1.wasm": "sha256-o71ysazOB4NeKXaEICmaNFwljwgBEIGRnR9c3v0skR4="
+      "System.Private.CoreLib.6ir871w1m7.wasm": "sha256-PojW97hzwVEuhC1nDRyY3vrg2a04ZLnrdhK1PnXHZQA="
     },
     "assembly": {
       "Microsoft.AspNetCore.Components.trxlk3t5u8.wasm": "sha256-x9HlYyKZndKw/UyOBtGVF/OseT+beJ+a3QXg6HhJ5mk=",
@@ -103,7 +103,7 @@
       "System.IO.Pipelines.wn1erg3up3.wasm": "sha256-FBW6K4TORa24v2L639DPjf309NTGkrj0iIqiJaPqcYA=",
       "System.Linq.Expressions.vpyrgkh4zl.wasm": "sha256-g9gyTiiA5oxHPHnA/qmoUsl16ry6rLzeqSq8bq1VYZU=",
       "System.Linq.Queryable.0y57jtba0a.wasm": "sha256-2NAs52qUCVo98dmt4iWAQGxOK+ibT45QrzIuqqa+OTw=",
-      "System.Linq.pxiwmi8fnt.wasm": "sha256-3cUDxcqg1o8pxR0K1tBQyApKMZ8HNCiOmOmMW33U+Ws=",
+      "System.Linq.8ui16g2zpy.wasm": "sha256-oPt2Qpm064tBfMsM/S7Cm/7tKANnYMmzvzygD9Nm1w0=",
       "System.Memory.bp0h7ss33b.wasm": "sha256-z/QYwpls8A0orsj/ojT/lJJHkMbNLyxIb0u0RIJlvjc=",
       "System.Net.Http.unyy781uvi.wasm": "sha256-+vqyxdE1+UA7vISnsC/CoYMA3LXzaLr7Eh0hQkgL3nw=",
       "System.Net.Mail.rsksa09trd.wasm": "sha256-tY0nIMmfs2ObGJ7YBLumd3iZLJ2NPVL6DZVjcGTKlRQ=",
@@ -117,7 +117,7 @@
       "System.Text.RegularExpressions.5gjltihx5v.wasm": "sha256-tWq9vht0rY9iM6tvHI4CaV2Nogm0sR+EJEOy72TVrIk=",
       "System.Threading.6wxzpv4ki1.wasm": "sha256-qpTsdttgwFKu3sCPl9Qw0nYZISOGaHpAJFTWUzt9Xzw=",
       "System.8rv0tdtrxz.wasm": "sha256-xMF0eauQ5DkSzUozHLFFMQnL6DSJO09nJLtgag+Dzbw=",
-      "MSFD_EventEaseApp.l4y6ao7lpg.wasm": "sha256-RUxCitNPaq47NxWO+bwql/i+oV+83qb+rJxQeVwBDHU="
+      "MSFD_EventEaseApp.vir23h66lk.wasm": "sha256-KWF3Uequdub0+YCuFJW2K/h9dQ1uCyXQW0ABcuh3ZSw="
     }
   },
   "cacheBootResources": true,
