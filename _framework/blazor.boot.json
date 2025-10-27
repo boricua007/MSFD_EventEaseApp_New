@@ -1,9 +1,9 @@
 {
   "mainAssemblyName": "MSFD_EventEaseApp",
   "resources": {
-    "hash": "sha256-3BDkuNkfjX5e5WaVLymjJa1VwDagqGPHtJleJVbnSZ0=",
+    "hash": "sha256-1baErWDE2dgYTXnVpXk23im49fvOXJ6y54OEbJx4Bm4=",
     "fingerprinting": {
-      "Microsoft.AspNetCore.Components.7dokllvo66.wasm": "Microsoft.AspNetCore.Components.wasm",
+      "Microsoft.AspNetCore.Components.trxlk3t5u8.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Forms.nsraukrs9h.wasm": "Microsoft.AspNetCore.Components.Forms.wasm",
       "Microsoft.AspNetCore.Components.Web.1kugvbercl.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
       "Microsoft.AspNetCore.Components.WebAssembly.fglwvu9j8s.wasm": "Microsoft.AspNetCore.Components.WebAssembly.wasm",
@@ -40,13 +40,14 @@
       "System.Private.Uri.4ji8q5clqr.wasm": "System.Private.Uri.wasm",
       "System.Runtime.InteropServices.JavaScript.lu7n7av6ff.wasm": "System.Runtime.InteropServices.JavaScript.wasm",
       "System.Runtime.Serialization.Primitives.53mp5ktcqx.wasm": "System.Runtime.Serialization.Primitives.wasm",
-      "System.Runtime.sxqlzqlk4p.wasm": "System.Runtime.wasm",
+      "System.Runtime.r9oj9lzq03.wasm": "System.Runtime.wasm",
       "System.Text.Encodings.Web.9rjk8as0i7.wasm": "System.Text.Encodings.Web.wasm",
       "System.Text.Json.m05oswjdcm.wasm": "System.Text.Json.wasm",
       "System.Text.RegularExpressions.5gjltihx5v.wasm": "System.Text.RegularExpressions.wasm",
+      "System.Threading.6wxzpv4ki1.wasm": "System.Threading.wasm",
       "System.8rv0tdtrxz.wasm": "System.wasm",
-      "System.Private.CoreLib.4z87o48ozy.wasm": "System.Private.CoreLib.wasm",
-      "MSFD_EventEaseApp.aumgtk1flw.wasm": "MSFD_EventEaseApp.wasm",
+      "System.Private.CoreLib.banva304v1.wasm": "System.Private.CoreLib.wasm",
+      "MSFD_EventEaseApp.l4y6ao7lpg.wasm": "MSFD_EventEaseApp.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.l4ptthxatg.js": "dotnet.native.js",
       "dotnet.native.d2w7colv7e.wasm": "dotnet.native.wasm",
@@ -71,10 +72,10 @@
     },
     "coreAssembly": {
       "System.Runtime.InteropServices.JavaScript.lu7n7av6ff.wasm": "sha256-fcbhHB7hDI448FbXH9oGRMD0YiK7sml91c0Cfomkn6c=",
-      "System.Private.CoreLib.4z87o48ozy.wasm": "sha256-0K4PBRPJo22NKb2d+93CKE/DoRrHzdGYE2fCx0mmFuw="
+      "System.Private.CoreLib.banva304v1.wasm": "sha256-o71ysazOB4NeKXaEICmaNFwljwgBEIGRnR9c3v0skR4="
     },
     "assembly": {
-      "Microsoft.AspNetCore.Components.7dokllvo66.wasm": "sha256-pa5AAX5OZ63QmPzTO6cyvqZ/i8JL+Gcj3NIlnER9Fn8=",
+      "Microsoft.AspNetCore.Components.trxlk3t5u8.wasm": "sha256-x9HlYyKZndKw/UyOBtGVF/OseT+beJ+a3QXg6HhJ5mk=",
       "Microsoft.AspNetCore.Components.Forms.nsraukrs9h.wasm": "sha256-yfZPSDIeynebTBLezB4Kn7uT8T8mULjaNFDYIA2xUpM=",
       "Microsoft.AspNetCore.Components.Web.1kugvbercl.wasm": "sha256-T9bgxUTPAdemlllaVO7e9AbW4BjDcpiBjefOQacuZJA=",
       "Microsoft.AspNetCore.Components.WebAssembly.fglwvu9j8s.wasm": "sha256-YcQQY/nHMOb3wYqd8dsqSmvcA87hI+Pp57nagR5w9ZY=",
@@ -110,12 +111,13 @@
       "System.ObjectModel.7m6n1tcre6.wasm": "sha256-wcmlpe+jkCyBS3vavLw0cdDgRBV+rg0VDjRGkcGTaZs=",
       "System.Private.Uri.4ji8q5clqr.wasm": "sha256-0J17L5BiqS0PYG90pkxf6z5d9kBOWQ9dhRN/aI9DYH8=",
       "System.Runtime.Serialization.Primitives.53mp5ktcqx.wasm": "sha256-EQFV/X5fi+UF4pyjHvt9aKck8oHREQLeEeex/z5vamM=",
-      "System.Runtime.sxqlzqlk4p.wasm": "sha256-oHaGHlEKCvVBPmB/nHppqhzUwE5oNiafqQjlSDwfCv8=",
+      "System.Runtime.r9oj9lzq03.wasm": "sha256-YTH+6ZeQeiyVZOMa1Q77gkcCF0Gy/yADBys/rYLkeng=",
       "System.Text.Encodings.Web.9rjk8as0i7.wasm": "sha256-+y7W1KnwkH6Qwrz33TSxWAn666Cbuzvn6QwDB/OpQgI=",
       "System.Text.Json.m05oswjdcm.wasm": "sha256-Zrve+0tSBTdd/S+IX7+/oiGtET+rXoEe20yssghcxxw=",
       "System.Text.RegularExpressions.5gjltihx5v.wasm": "sha256-tWq9vht0rY9iM6tvHI4CaV2Nogm0sR+EJEOy72TVrIk=",
+      "System.Threading.6wxzpv4ki1.wasm": "sha256-qpTsdttgwFKu3sCPl9Qw0nYZISOGaHpAJFTWUzt9Xzw=",
       "System.8rv0tdtrxz.wasm": "sha256-xMF0eauQ5DkSzUozHLFFMQnL6DSJO09nJLtgag+Dzbw=",
-      "MSFD_EventEaseApp.aumgtk1flw.wasm": "sha256-Xku+EMADC92tlTplfeUUe5DIeSFGzXYhby3+KcF2Lqs="
+      "MSFD_EventEaseApp.l4y6ao7lpg.wasm": "sha256-RUxCitNPaq47NxWO+bwql/i+oV+83qb+rJxQeVwBDHU="
     }
   },
   "cacheBootResources": true,
