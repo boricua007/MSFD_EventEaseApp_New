@@ -44,7 +44,7 @@ Each page demonstrates different architectural patterns and technical approaches
 - **Key Learning**: Foundation patterns that other pages build upon
 - **Features**: Event browsing, search, filtering with standard EventCard components
 
-#### **Events Optimized** (Blue Alert - Performance)
+#### **Events Optimized** (Green Alert - Performance)
 - **Technical Focus**: Performance optimization techniques
 - **What to Observe**: EventSummary DTOs, Blazor Virtualize component, pre-computed values
 - **Key Learning**: Data transfer optimization, large dataset handling, component efficiency
