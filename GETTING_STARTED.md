@@ -50,7 +50,7 @@ Each page demonstrates different architectural patterns and technical approaches
 - **Key Learning**: Data transfer optimization, large dataset handling, component efficiency
 - **Features**: Same functionality as Events page but with optimized rendering and data handling
 
-#### 👤 **Events with Session** (Green Alert - User Experience)
+####  **Events with Session** (Green Alert - User Experience)
 - **Technical Focus**: Session management and user experience enhancement
 - **What to Observe**: localStorage integration, personalization, recommendation algorithms
 - **Key Learning**: State persistence, user behavior tracking, dynamic content
