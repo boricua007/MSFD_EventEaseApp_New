@@ -1,6 +1,6 @@
 # Getting Started with MSFD Event Ease App
 
-## 🚀 Quick Setup
+## Quick Setup
 
 ### Prerequisites
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) or later
@@ -28,23 +28,23 @@
    - Navigate to `https://localhost:5001` or `http://localhost:5000`
    - The application will load with sample event data ready for exploration
 
-## 🎯 Navigation & Learning Guide
+## Navigation & Learning Guide
 
 Each page demonstrates different architectural patterns and technical approaches. **Look for the colored technical summaries at the top of each page** - they explain the implementation focus and encourage comparison with other pages.
 
 ### Core Pages Overview
 
-#### 🏠 **Home Page**
+#### **Home Page**
 - Application overview and main navigation
 - Links to all major features and demos
 
-#### 📅 **Events** (Green Alert - Baseline)
+#### **Events** (Green Alert - Baseline)
 - **Technical Focus**: Standard Blazor implementation patterns
 - **What to Observe**: Basic component lifecycle, dependency injection, traditional rendering
 - **Key Learning**: Foundation patterns that other pages build upon
 - **Features**: Event browsing, search, filtering with standard EventCard components
 
-#### ⚡ **Events Optimized** (Blue Alert - Performance)
+#### **Events Optimized** (Blue Alert - Performance)
 - **Technical Focus**: Performance optimization techniques
 - **What to Observe**: EventSummary DTOs, Blazor Virtualize component, pre-computed values
 - **Key Learning**: Data transfer optimization, large dataset handling, component efficiency
@@ -56,19 +56,19 @@ Each page demonstrates different architectural patterns and technical approaches
 - **Key Learning**: State persistence, user behavior tracking, dynamic content
 - **Features**: Bookmarking, viewing history, personalized recommendations, session restoration
 
-#### 📋 **Attendance Demo** (Green Alert - State Management)
+#### **Attendance Demo** (Green Alert - State Management)
 - **Technical Focus**: Real-time state management and event-driven architecture
 - **What to Observe**: Component communication, state machines, event subscriptions
 - **Key Learning**: Enterprise-level event management, workflow tracking, data aggregation
 - **Features**: Event registration, check-in/check-out, attendance tracking, analytics
 
-#### 🔐 **Session Demo** (Green Alert - Session Fundamentals)
+#### **Session Demo** (Green Alert - Session Fundamentals)
 - **Technical Focus**: Core session management patterns
 - **What to Observe**: Authentication workflows, session duration tracking, data persistence
 - **Key Learning**: User authentication, session lifecycle, browser storage integration
 - **Features**: Manual login/logout, session monitoring, activity tracking
 
-## 💡 How to Explore Effectively
+## How to Explore Effectively
 
 ### 1. **Start with the Baseline**
 Begin with the **Events** page to understand the standard implementation, then compare with **Events Optimized** to see performance improvements.
@@ -93,7 +93,7 @@ Each page's colored alert explains:
 - How it compares to other pages
 - What to focus on while exploring
 
-## 🔧 Development Setup (Optional)
+## Development Setup (Optional)
 
 ### For Development/Modification
 If you want to modify or extend the application:
@@ -121,7 +121,7 @@ If you want to modify or extend the application:
    └── wwwroot/         # Static assets
    ```
 
-## 🎓 Learning Objectives
+## Learning Objectives
 
 This application demonstrates:
 - **Blazor WebAssembly** fundamentals and advanced patterns
@@ -132,12 +132,3 @@ This application demonstrates:
 - **User experience** enhancement techniques
 - **Real-time state management** with event-driven patterns
 
-## 📖 Additional Resources
-
-- [Blazor Documentation](https://docs.microsoft.com/aspnet/core/blazor/)
-- [.NET 9.0 Documentation](https://docs.microsoft.com/dotnet/)
-- [Bootstrap Documentation](https://getbootstrap.com/docs/)
-
----
-
-**Ready to explore?** Start by running the application and visiting each page. The technical summaries will guide your learning journey through different Blazor implementation patterns and architectural approaches.
