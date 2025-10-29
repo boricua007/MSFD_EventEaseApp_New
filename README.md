@@ -2,9 +2,9 @@
 A comprehensive Blazor WebAssembly application developed by Daisy Allen, demonstrating full-stack event management with advanced validation, performance optimization, and robust error handling.
 
 ## 🌐 Live Demo
-**[Try the Live Application →](https://your-app-url.github.io)** *(Coming soon)*
+**[Try the Live Application →]([https://your-app-url.github.io](https://boricua007.github.io/MSFD_EventEaseApp_New/))** 
 
-## 📚 Documentation
+## Documentation
 - **[Getting Started](GETTING_STARTED.md)** - Setup, installation, and navigation guide
 - **[Project Overview](#project-overview)**    - Technical features and architecture
 - **[Technology Stack](#technology-stack)** - Frameworks and tools used
@@ -201,6 +201,17 @@ This project demonstrates key competencies required for the Microsoft Full Stack
 -  ✅ **Search & Filtering Implementation**
 -  ✅ **Modern Web Development Best Practices**
 
+
+## Learning Objectives
+
+This application demonstrates:
+- **Blazor WebAssembly** fundamentals and advanced patterns
+- **Performance optimization** strategies (caching, DTOs, virtualization)
+- **Session management** and state persistence
+- **Component architecture** and reusability
+- **Service layer** design and dependency injection
+- **User experience** enhancement techniques
+- **Real-time state management** with event-driven patterns
 ---
 
 *This EventEase application showcases enterprise-grade Blazor development with emphasis on performance, validation, and user experience - essential skills for full-stack software developers.*
