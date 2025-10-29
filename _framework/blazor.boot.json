@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "MSFD_EventEaseApp",
   "resources": {
-    "hash": "sha256-miSLMpTwAVZ99D36/akeRm4c7edJ3vFKVoSrb89biBo=",
+    "hash": "sha256-cNNzrZL9idoJ9sdTGgcbkHUluAwCLQ3Cn33e3pu1K/E=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.trxlk3t5u8.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Forms.nsraukrs9h.wasm": "Microsoft.AspNetCore.Components.Forms.wasm",
@@ -47,7 +47,7 @@
       "System.Threading.6wxzpv4ki1.wasm": "System.Threading.wasm",
       "System.8rv0tdtrxz.wasm": "System.wasm",
       "System.Private.CoreLib.6ir871w1m7.wasm": "System.Private.CoreLib.wasm",
-      "MSFD_EventEaseApp.oktjk9muv3.wasm": "MSFD_EventEaseApp.wasm",
+      "MSFD_EventEaseApp.7ydswgqaet.wasm": "MSFD_EventEaseApp.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.l4ptthxatg.js": "dotnet.native.js",
       "dotnet.native.d2w7colv7e.wasm": "dotnet.native.wasm",
@@ -117,7 +117,7 @@
       "System.Text.RegularExpressions.5gjltihx5v.wasm": "sha256-tWq9vht0rY9iM6tvHI4CaV2Nogm0sR+EJEOy72TVrIk=",
       "System.Threading.6wxzpv4ki1.wasm": "sha256-qpTsdttgwFKu3sCPl9Qw0nYZISOGaHpAJFTWUzt9Xzw=",
       "System.8rv0tdtrxz.wasm": "sha256-xMF0eauQ5DkSzUozHLFFMQnL6DSJO09nJLtgag+Dzbw=",
-      "MSFD_EventEaseApp.oktjk9muv3.wasm": "sha256-eFRgM5Vz5bJ8ouq6KuYf2NBFUyK1xXNhEYI8T94leDY="
+      "MSFD_EventEaseApp.7ydswgqaet.wasm": "sha256-YUpF+8ehvyeMeuhxUzQZtSuWLJtPiS+n9JBdOwJyyPU="
     }
   },
   "cacheBootResources": true,
